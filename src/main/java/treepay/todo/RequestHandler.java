@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,12 +41,15 @@ public class RequestHandler implements RequestStreamHandler {
             if(event.get("body")!=null && !event.getString("body").equals("null"))
             	body = new JSONObject(event.getString("body"));
             
-            String sqlString = DatabaseUtil.getSqlString(receive_httpMethod, id_fromPathParameters, body);
-            JSONObject returnResult = DatabaseUtil.exceuteSql(sqlString);
+            JSONObject returnResult = DatabaseUtil.exceuteSql(receive_httpMethod, id_fromPathParameters, body);
             
             try {
-                if("true".equals(returnResult.get("is_updated")))
+                if("true".equals(returnResult.get("is_success")))
                 	returnResult.put("data", body);
+                if(returnResult.get("last_inserted_id") != null){
+                	body.put("id", returnResult.get("last_inserted_id"));
+                	returnResult.put("data", body);
+                }
 			} catch (JSONException e) {
 				// Do nothing.
 			}
@@ -78,28 +78,6 @@ public class RequestHandler implements RequestStreamHandler {
     	OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
     	writer.write(handlerResponse.toString());
     	writer.close();
-    }
-    
-    
-    
-    public static void main(String[] args) throws SQLException {   
-    	
-    	Connection conn = null;
-    	String connectionString = "jdbc:mysql://dbone.cbvpxlkpqfey.ap-southeast-1.rds.amazonaws.com/test?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&user=root&password=rootroot";
-        try {
-			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
-			conn = DriverManager.getConnection(connectionString);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-    	String sqlInsert = "INSERT INTO todo (name, description, is_done, due_date, order_id) "
-    					 + "VALUES ('My wedding', 'My wedding party at Lampang', '0', '20170319', 1)";
-    	String sqlSelect = "SELECT * from todo where id=1";
-    	JSONObject returnResult = DatabaseUtil.exceuteSql(sqlInsert);
-    	System.out.println(returnResult);
-    	conn.close();
     }
     
 }
