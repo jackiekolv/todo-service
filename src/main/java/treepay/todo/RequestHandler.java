@@ -23,7 +23,7 @@ public class RequestHandler implements RequestStreamHandler {
 
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
     	
-    	System.out.println("Loading Java Lambda handler of RequestHandler.");
+    	System.out.println("Loading Java Lambda handler of RequestHandler");
     	
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         JSONObject handlerResponse = null;
@@ -36,26 +36,16 @@ public class RequestHandler implements RequestStreamHandler {
 
             String receive_httpMethod = (String) event.get("httpMethod");
             
-
-        	Connection conn = null;
-        	String connectionString = System.getenv("connection_string");
-            try {
-    			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
-    			conn = DriverManager.getConnection(connectionString);
-    		} catch (Exception e1) {
-    			// TODO Auto-generated catch block
-    			e1.printStackTrace();
-    		}
-            String id = null;
+            String id_fromPathParameters = null;
             if(event.get("pathParameters")!=null && !event.getString("pathParameters").equals("null"))
-            	id = event.getJSONObject("pathParameters").getString("id");
+            	id_fromPathParameters = event.getJSONObject("pathParameters").getString("id");
             
             JSONObject body = null;
             if(event.get("body")!=null && !event.getString("body").equals("null"))
             	body = new JSONObject(event.getString("body"));
             
-            String sqlString = DatabaseUtil.getSqlString(receive_httpMethod, id, body);
-            JSONObject returnResult = DatabaseUtil.exceuteSql(sqlString, conn);
+            String sqlString = DatabaseUtil.getSqlString(receive_httpMethod, id_fromPathParameters, body);
+            JSONObject returnResult = DatabaseUtil.exceuteSql(sqlString);
             
             try {
                 if("true".equals(returnResult.get("is_updated")))
@@ -107,7 +97,7 @@ public class RequestHandler implements RequestStreamHandler {
     	String sqlInsert = "INSERT INTO todo (name, description, is_done, due_date, order_id) "
     					 + "VALUES ('My wedding', 'My wedding party at Lampang', '0', '20170319', 1)";
     	String sqlSelect = "SELECT * from todo where id=1";
-    	JSONObject returnResult = DatabaseUtil.exceuteSql(sqlInsert, conn);
+    	JSONObject returnResult = DatabaseUtil.exceuteSql(sqlInsert);
     	System.out.println(returnResult);
     	conn.close();
     }

@@ -1,6 +1,8 @@
 package treepay.todo.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -8,7 +10,6 @@ import java.sql.Statement;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.mysql.cj.jdbc.PreparedStatement;
 
 public class DatabaseUtil {
 	
@@ -31,7 +32,19 @@ public class DatabaseUtil {
 		return sqlString;
 	}
 	
-    public static JSONObject exceuteSql(String sqlString, Connection conn) {
+    public static JSONObject exceuteSql(String sqlString) {
+
+    	Connection conn = null;
+    	String connectionString = System.getenv("connection_string");
+        try {
+			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+			conn = DriverManager.getConnection(connectionString);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+
 //    	PreparedStatement prest;
 //        prest = conn.prepareStatement("", Statement.RETURN_GENERATED_KEYS);
 //        prest.setString(1,"abc");
@@ -41,7 +54,9 @@ public class DatabaseUtil {
 //        {
 //            int last_inserted_id = rs.getInt(1);
 //        }
-
+        
+        
+        
     	JSONObject result = new JSONObject();
     	Statement stmt = null;
     	ResultSet rs = null;
